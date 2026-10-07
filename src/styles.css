@@ -1,0 +1,54 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #111;
+  background: #f7f6f3;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.host {
+  margin: 0;
+  color: #555;
+}
+
+h1 {
+  margin: 32px 0 8px;
+  font-size: clamp(48px, 10vw, 96px);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.date {
+  margin: 0 0 48px;
+  font-size: 20px;
+}
+
+form {
+  display: grid;
+  gap: 16px;
+  font-size: 18px;
+}
+
+input[type="number"] {
+  width: 80px;
+  margin-left: 8px;
+  font: inherit;
+}
+
+.total {
+  font-size: 28px;
+}

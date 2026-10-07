@@ -1,0 +1,20 @@
+# Unit tests: runs the tests in src/**/*.test.ts with Vitest.
+# Switch it on: copy this file into .github/workflows/ and push.
+name: Unit tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test

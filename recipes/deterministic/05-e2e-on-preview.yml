@@ -1,0 +1,29 @@
+# End-to-end tests on the preview: when Vercel has deployed a preview of a pull request, run the Playwright
+# tests in tests/e2e against that URL.
+# Switch it on: copy this file into .github/workflows/ and push.
+#
+# Vercel protects previews with a login. Either turn that off (Vercel > Project > Settings > Deployment Protection),
+# or add a bypass: Settings > Deployment Protection > Protection Bypass for Automation, then save the secret
+# in GitHub as VERCEL_AUTOMATION_BYPASS_SECRET (Repo > Settings > Secrets and variables > Actions).
+name: E2E on preview
+
+on:
+  deployment_status:
+
+jobs:
+  e2e:
+    # Vercel reports a deployment for every preview; only test the ones that succeeded.
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
