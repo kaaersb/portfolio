@@ -1,5 +1,5 @@
 {
-  "name": "aau-cicd-workshop-3",
+  "name": "portfolio",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -20,14 +20,10 @@
     "size": "node scripts/check-size.mjs",
     "audit": "npm audit --omit=dev --audit-level=high"
   },
-  "dependencies": {
-    "lodash": "4.17.20"
-  },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
-    "@types/lodash": "^4.17.25",
     "@types/node": "^24.0.0",
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
