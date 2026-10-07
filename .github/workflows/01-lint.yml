@@ -1,0 +1,21 @@
+# Lint and format check: catches mistakes like unused variables, and code that isn't formatted the same way as the rest.
+# Switch it on: copy this file into .github/workflows/ and push.
+name: Lint and format
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
