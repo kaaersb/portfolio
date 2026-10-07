@@ -4,13 +4,11 @@ import { analytics } from "./config";
 import { site } from "./content";
 import { totalPrice } from "./lib/price";
 
-const DEBUG = true;
-
 const app = document.querySelector<HTMLElement>("#app")!;
 
 app.innerHTML = `
   <header>
-    <img src="/logo.svg" width="64" height="64" />
+    <img src="/logo.svg" alt="Logo" width="64" height="64" />
     <p class="host">${_.escape(site.name)} presents</p>
   </header>
   <h1>${_.escape(site.event)}</h1>
