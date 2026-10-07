@@ -1,60 +1,77 @@
-# Launch night: CI kit
+# Portfolio
 
-The starter for Workshop 3 of the guest lecture **CI/CD in the age of AI agents** (AAU CPH, October 2026).
+My portfolio site, and the pipeline that ships it.
 
-The same ticket shop as in Session 1, now with tests, scripts and ready-made CI steps, and a few problems planted in
-it for those steps to find.
+**Live:** https://portfolio-kaare.vercel.app
 
-## Set up (5 min)
+The site is a small static page built with Vite and TypeScript. All the text lives in
+[`src/content.ts`](src/content.ts), and [`src/lib/render.ts`](src/lib/render.ts) turns it into HTML.
 
-You did this in Session 1, so it goes fast:
+## The pipeline
 
-1. Click **Use this template** > **Create a new repository**. Make it public, under your own account.
-2. In Vercel: **Add New > Project**, import the new repository, **Deploy**.
-3. Put your name in `src/content.ts` and commit to `main`. It deploys.
+Every change goes through a pull request. Nothing reaches `main` without passing the checks, and anything on `main`
+is live a minute later.
 
-Want to run the checks locally (optional):
-
-```sh
-npm install
-npm run lint
-npm test
+```
+branch ──► pull request ──┬─► Lint and format     (gate)
+                          ├─► Build               (gate)
+                          ├─► Accessibility       (gate)
+                          ├─► AI code review      (advisory comment)
+                          └─► Vercel preview URL
+                                     │
+                      all gates green ▼
+                                   merge ──► main ──► Vercel production deploy
 ```
 
-## Workshop 3: add at least one CI step (30 min)
+### Continuous delivery
 
-Pick a step from [`docs/ci-steps.md`](docs/ci-steps.md), the same list as on the slide.
+The repository is connected to [Vercel](https://vercel.com). A push to `main` builds the site with `npm run build` and
+deploys it to production. Every pull request gets its own preview deployment, and Vercel posts the URL on the pull
+request, so a change can be looked at in a real browser before it is merged.
 
-1. Make a branch, copy a recipe from `recipes/` into `.github/workflows/`, and push.
-2. Open a pull request. Watch the **Checks** tab. Vercel also deploys a preview of your branch.
-3. Red? Good: this repo has problems planted in it. Fix the problem (not the step) and push again until it's green.
-4. Make it a gate: protect `main` so the check has to pass before you can merge (see the bottom of `docs/ci-steps.md`).
-5. Merge. CI let it in, CD put it live.
+### Deterministic CI: same input, same answer
 
-Add as many steps as you like. One deterministic and one probabilistic is a good half hour.
+These run in GitHub Actions on every pull request and on every push to `main`. Each one runs a script you can also run
+locally.
 
-## Show and tell
+| Workflow                                         | What it checks                                                                               | Locally                                 |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------- | --------------------------------------- |
+| [Lint and format](.github/workflows/01-lint.yml) | ESLint finds mistakes such as unused variables; Prettier checks the formatting is consistent | `npm run lint` · `npm run format:check` |
+| [Build](.github/workflows/04-build.yml)          | The production build succeeds, so a merge can never break the deploy                         | `npm run build`                         |
+| [Accessibility](.github/workflows/09-a11y.yml)   | Builds the site and scans it with axe-core in a real Chromium against WCAG 2 A and AA rules  | `npm run a11y`                          |
 
-Post your repository and a link to a pull request that went from red to green in the
-[Show and tell issue](https://github.com/emilhorlyck/aau-cicd-workshop-3/issues/1).
+### Probabilistic CI: a judgement from an AI agent
 
-## What's in here
+[AI code review](.github/workflows/01-ai-review.yml) sends the pull request's title, description and diff to Claude,
+using the prompt in [`recipes/probabilistic/prompts/review.md`](recipes/probabilistic/prompts/review.md), and posts the
+answer as a comment on the pull request. It is advisory: it never fails the build, because a model's judgement can vary
+from run to run. The model key is stored as the repository secret `ANTHROPIC_API_KEY`.
 
-| Path                             | What it is                                                                                    |
-| -------------------------------- | --------------------------------------------------------------------------------------------- |
-| `src/`                           | The site: `content.ts` (your text), `main.ts`, `lib/price.ts` (the price logic) and its tests |
-| `tests/e2e/`                     | Playwright tests of the page                                                                  |
-| `tests/a11y/`                    | An axe-core accessibility scan of the page                                                    |
-| `recipes/`                       | Ready-made CI steps. Not active until you copy one into `.github/workflows/`                  |
-| `recipes/probabilistic/prompts/` | The prompts the AI steps use                                                                  |
-| `docs/spec.md`                   | What the site should do, used by the spec check                                               |
-| `scripts/`                       | The bundle budget check and the script the AI steps use to ask a model                        |
+### Protected `main`
 
-| Script                                                        | What it does                                                  |
-| ------------------------------------------------------------- | ------------------------------------------------------------- |
-| `npm run dev`                                                 | Run the site on your machine                                  |
-| `npm run build`                                               | Build it like Vercel does                                     |
-| `npm run lint` · `npm run format:check` · `npm run typecheck` | Static checks                                                 |
-| `npm test`                                                    | Unit tests                                                    |
-| `npm run test:e2e` · `npm run a11y`                           | Browser tests (first time: `npx playwright install chromium`) |
-| `npm run size` · `npm run audit`                              | Bundle budget and dependency audit                            |
+A branch ruleset on `main` requires a pull request and requires **Lint and format**, **Build** and **Accessibility** to
+pass before anything can merge. Force pushes are blocked. So the deterministic checks are gates, and the AI review is
+advice that a person reads.
+
+## Running it locally
+
+```bash
+npm install
+npm run dev          # the site on http://localhost:5173
+npm test             # unit tests for the rendering
+npm run lint
+npx playwright install chromium   # first time only
+npm run test:e2e     # browser tests of the page
+npm run a11y         # accessibility scan
+```
+
+## Changing the content
+
+Edit [`src/content.ts`](src/content.ts) on a branch and open a pull request. The checks run, Vercel posts a preview,
+and merging puts it live.
+
+## Background
+
+Built as the final assignment for the guest lecture _CI/CD in the age of AI agents_ (AAU CPH, October 2026), starting
+from the workshop's CI kit. The unused recipes are still in [`recipes/`](recipes/) and can be switched on by copying
+them into `.github/workflows/`.
