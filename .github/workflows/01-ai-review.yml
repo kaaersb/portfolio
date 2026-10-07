@@ -1,0 +1,42 @@
+# AI code review on the pull request: a model reads the diff and comments. Advisory: it never fails the build.
+# Switch it on: copy this file into .github/workflows/ and push, then open a pull request.
+# Needs a model key as a repository secret: ANTHROPIC_API_KEY, or AI_API_KEY plus the variables AI_BASE_URL and
+# MODEL for any OpenAI-compatible API (Google's free Gemini tier works). See scripts/ask-model.sh. The prompt is in
+# recipes/probabilistic/prompts/review.md. Change the prompt, change the check.
+name: AI code review
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Ask the model
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_BASE_URL: ${{ vars.AI_BASE_URL }}
+          MODEL: ${{ vars.MODEL }}
+          BASE: ${{ github.base_ref }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          {
+            echo "## Pull request: $TITLE"; echo "$BODY"; echo
+            echo "## Diff"; git diff "origin/$BASE...HEAD" -- . ':!package-lock.json'
+          } | scripts/ask-model.sh recipes/probabilistic/prompts/review.md > answer.md
+          cat answer.md
+      - name: Comment on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          { echo "### AI code review"; echo; cat answer.md; } > comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md
