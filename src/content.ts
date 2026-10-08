@@ -23,21 +23,22 @@ export type Site = {
 };
 
 export const site: Site = {
-  name: "Your Name",
-  role: "Software engineering student at Aalborg University",
+  name: "Kaare Mathias Skau Björnsson",
+  role: "Cyber- and computertechnology student at Aalborg University Copenhagen",
   intro:
-    "I build web applications and the pipelines that ship them. This site is deployed by its own CI/CD pipeline.",
+    "I build applications and the pipelines that ship them. This site is deployed by its own CI/CD pipeline.",
   about: [
     "A few sentences about who you are, what you study and what kind of work you are looking for.",
     "A sentence about what you enjoy building, or what you are learning right now.",
   ],
   skills: [
-    "TypeScript",
-    "React",
+    "JavaScript / HTML / CSS",
+    "Java",
     "Node.js",
     "Python",
     "GitHub Actions",
     "Docker",
+    "C and C#",
   ],
   projects: [
     {
